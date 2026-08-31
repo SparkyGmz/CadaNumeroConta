@@ -1,0 +1,2434 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Cada Número Conta</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+
+<!-- Firebase -->
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<style>
+
+/* =========================================================
+   CORES
+========================================================= */
+
+:root{
+
+    --blue-950:#102a43;
+    --blue-900:#163a5f;
+    --blue-800:#24547a;
+    --blue-700:#3a6f97;
+
+    --sky:#dcebf5;
+    --sky-soft:#edf5fa;
+
+    --cream:#f8f7f3;
+    --white:#ffffff;
+
+    --coral:#e77b6b;
+
+    --available:#dff0e8;
+    --available-text:#246b52;
+
+    --blocked:#e7e9ed;
+    --blocked-text:#6b7280;
+
+    --ink:#1f2933;
+    --muted:#6b7280;
+
+}
+
+
+/* =========================================================
+   RESET
+========================================================= */
+
+*{
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+html,
+body{
+    margin:0;
+    padding:0;
+}
+
+body{
+
+    background:var(--cream);
+
+    color:var(--ink);
+
+    font-family:'DM Sans',sans-serif;
+
+    min-height:100vh;
+
+}
+
+h1,
+h2,
+h3{
+
+    font-family:'Playfair Display',serif;
+
+    margin:0;
+
+}
+
+button{
+
+    font-family:'DM Sans',sans-serif;
+
+    cursor:pointer;
+
+    border:none;
+
+}
+
+
+/* =========================================================
+   CONTAINER
+========================================================= */
+
+.container{
+
+    max-width:1100px;
+
+    margin:auto;
+
+    padding:0 24px 80px;
+
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+header.hero{
+
+    background:
+
+    radial-gradient(
+        circle at top left,
+        rgba(255,255,255,.12),
+        transparent 35%
+    ),
+
+    linear-gradient(
+        135deg,
+        var(--blue-950),
+        var(--blue-800)
+    );
+
+    color:white;
+
+    padding:70px 24px 55px;
+
+}
+
+
+.hero-inner{
+
+    max-width:1100px;
+
+    margin:auto;
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    justify-content:space-between;
+
+    align-items:end;
+
+    gap:40px;
+
+}
+
+
+.eyebrow{
+
+    color:#b9dcf0;
+
+    font-weight:700;
+
+    font-size:.9rem;
+
+    letter-spacing:.08em;
+
+    text-transform:uppercase;
+
+    margin-bottom:12px;
+
+}
+
+
+.hero-text h1{
+
+    font-size:clamp(2.4rem,5vw,4rem);
+
+    max-width:650px;
+
+}
+
+
+.hero-text p{
+
+    color:#d9e7f0;
+
+    max-width:600px;
+
+    margin-top:18px;
+
+    font-size:1.05rem;
+
+}
+
+
+/* =========================================================
+   ESTATÍSTICAS
+========================================================= */
+
+.stat-row{
+
+    display:flex;
+
+    gap:18px;
+
+}
+
+
+.stat{
+
+    background:rgba(255,255,255,.1);
+
+    backdrop-filter:blur(8px);
+
+    border:1px solid rgba(255,255,255,.15);
+
+    border-radius:14px;
+
+    padding:18px 22px;
+
+    min-width:110px;
+
+}
+
+
+.stat .num{
+
+    font-size:2rem;
+
+    font-weight:700;
+
+}
+
+
+.stat .lbl{
+
+    font-size:.8rem;
+
+    color:#d9e7f0;
+
+}
+
+
+/* =========================================================
+   NAVEGAÇÃO
+========================================================= */
+
+nav.tabs{
+
+    max-width:1100px;
+
+    margin:32px auto 0;
+
+    padding:0 24px;
+
+    display:flex;
+
+    gap:10px;
+
+}
+
+
+.tab-btn{
+
+    background:white;
+
+    color:var(--blue-900);
+
+    padding:11px 20px;
+
+    border-radius:999px;
+
+    border:1px solid #d9e1e8;
+
+    font-weight:600;
+
+    transition:.2s;
+
+}
+
+
+.tab-btn:hover{
+
+    transform:translateY(-2px);
+
+}
+
+
+.tab-btn.active{
+
+    background:var(--blue-900);
+
+    color:white;
+
+}
+
+
+/* =========================================================
+   PAINÉIS
+========================================================= */
+
+section.panel{
+
+    display:none;
+
+}
+
+
+section.panel.active{
+
+    display:block;
+
+}
+
+
+/* =========================================================
+   INTRODUÇÃO
+========================================================= */
+
+.info-card{
+
+    background:white;
+
+    border-radius:24px;
+
+    padding:28px;
+
+    margin-top:28px;
+
+    box-shadow:0 10px 35px rgba(16,42,67,.08);
+
+}
+
+
+.info-card h2{
+
+    color:var(--blue-950);
+
+    font-size:1.6rem;
+
+}
+
+
+.info-card p{
+
+    color:var(--muted);
+
+    margin-bottom:0;
+
+}
+
+
+/* =========================================================
+   BINGO
+========================================================= */
+
+.bingo-section{
+
+    margin-top:28px;
+
+    background:
+
+    radial-gradient(
+        circle at top,
+        #ffffff,
+        #edf5fa
+    );
+
+    border-radius:28px;
+
+    padding:45px 25px;
+
+    text-align:center;
+
+    box-shadow:
+        0 20px 50px
+        rgba(16,42,67,.10);
+
+    position:relative;
+
+    overflow:hidden;
+
+}
+
+
+.bingo-section::before{
+
+    content:"";
+
+    position:absolute;
+
+    width:500px;
+
+    height:500px;
+
+    border-radius:50%;
+
+    background:rgba(58,111,151,.05);
+
+    top:-300px;
+
+    left:-200px;
+
+}
+
+
+.bingo-header{
+
+    position:relative;
+
+    z-index:2;
+
+}
+
+
+.bingo-tag{
+
+    display:inline-block;
+
+    background:var(--sky);
+
+    color:var(--blue-800);
+
+    padding:7px 14px;
+
+    border-radius:999px;
+
+    font-size:.75rem;
+
+    font-weight:700;
+
+    letter-spacing:.08em;
+
+    margin-bottom:14px;
+
+}
+
+
+.bingo-header h2{
+
+    color:var(--blue-950);
+
+    font-size:2rem;
+
+}
+
+
+.bingo-header p{
+
+    color:var(--muted);
+
+    max-width:500px;
+
+    margin:12px auto 25px;
+
+}
+
+
+/* MÁQUINA */
+
+.bingo-machine{
+
+    width:270px;
+
+    height:270px;
+
+    margin:25px auto;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    position:relative;
+
+}
+
+
+.bingo-ring{
+
+    position:absolute;
+
+    width:240px;
+
+    height:240px;
+
+    border-radius:50%;
+
+    border:2px dashed rgba(58,111,151,.25);
+
+    animation:rotateRing 12s linear infinite;
+
+}
+
+
+.bingo-glow{
+
+    position:absolute;
+
+    width:100%;
+
+    height:100%;
+
+    border-radius:50%;
+
+    background:
+
+    radial-gradient(
+        circle,
+        rgba(231,123,107,.18),
+        transparent 65%
+    );
+
+    animation:glowPulse 2.5s infinite;
+
+}
+
+
+.bingo-ball{
+
+    width:190px;
+
+    height:190px;
+
+    border-radius:50%;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-family:'Playfair Display',serif;
+
+    font-size:4.8rem;
+
+    font-weight:700;
+
+    color:var(--blue-950);
+
+    background:
+
+    radial-gradient(
+        circle at 30% 25%,
+        #ffffff,
+        #dcebf5 55%,
+        #b7cfdf
+    );
+
+    box-shadow:
+
+    inset -15px -18px 30px rgba(16,42,67,.15),
+
+    0 20px 40px rgba(16,42,67,.20);
+
+    position:relative;
+
+    z-index:2;
+
+}
+
+
+/* ROLETA GIRANDO */
+
+.bingo-ball.rolling{
+
+    animation:rollingBall .12s infinite;
+
+}
+
+
+/* RESULTADO */
+
+.bingo-ball.final{
+
+    animation:finalPop .7s cubic-bezier(.2,1.5,.4,1);
+
+}
+
+
+/* ANIMAÇÕES */
+
+@keyframes rotateRing{
+
+    from{
+        transform:rotate(0deg);
+    }
+
+    to{
+        transform:rotate(360deg);
+    }
+
+}
+
+
+@keyframes rollingBall{
+
+    0%{
+
+        transform:rotate(-5deg) scale(1);
+
+    }
+
+    50%{
+
+        transform:rotate(5deg) scale(1.06);
+
+    }
+
+    100%{
+
+        transform:rotate(-5deg) scale(1);
+
+    }
+
+}
+
+
+@keyframes finalPop{
+
+    0%{
+
+        transform:scale(.5);
+
+        opacity:0;
+
+    }
+
+    70%{
+
+        transform:scale(1.15);
+
+    }
+
+    100%{
+
+        transform:scale(1);
+
+        opacity:1;
+
+    }
+
+}
+
+
+@keyframes glowPulse{
+
+    0%{
+
+        transform:scale(.85);
+
+        opacity:.3;
+
+    }
+
+    50%{
+
+        transform:scale(1.15);
+
+        opacity:.9;
+
+    }
+
+    100%{
+
+        transform:scale(.85);
+
+        opacity:.3;
+
+    }
+
+}
+
+
+/* =========================================================
+   BOTÕES
+========================================================= */
+
+.btn{
+
+    padding:12px 22px;
+
+    border-radius:999px;
+
+    font-weight:700;
+
+    font-size:.95rem;
+
+    transition:.2s;
+
+}
+
+
+.btn:hover{
+
+    transform:translateY(-2px);
+
+}
+
+
+.btn:disabled{
+
+    opacity:.5;
+
+    cursor:not-allowed;
+
+    transform:none;
+
+}
+
+
+.btn-primary{
+
+    background:var(--blue-900);
+
+    color:white;
+
+}
+
+
+.btn-coral{
+
+    background:var(--coral);
+
+    color:white;
+
+    padding:15px 32px;
+
+    font-size:1rem;
+
+    box-shadow:
+    0 10px 25px
+    rgba(231,123,107,.30);
+
+}
+
+
+.btn-ghost{
+
+    background:white;
+
+    border:1px solid #d6dde5;
+
+    color:var(--blue-900);
+
+}
+
+
+.btn-danger{
+
+    background:#b94a48;
+
+    color:white;
+
+}
+
+
+/* =========================================================
+   LEGENDA
+========================================================= */
+
+.legend{
+
+    display:flex;
+
+    gap:22px;
+
+    flex-wrap:wrap;
+
+    align-items:center;
+
+    margin:30px 0 18px;
+
+}
+
+
+.legend .item{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    color:var(--muted);
+
+    font-size:.9rem;
+
+}
+
+
+.swatch{
+
+    width:15px;
+
+    height:15px;
+
+    border-radius:5px;
+
+}
+
+
+.swatch.available{
+
+    background:var(--available-text);
+
+}
+
+
+.swatch.blocked{
+
+    background:var(--blocked-text);
+
+}
+
+
+/* =========================================================
+   GRADE DOS NÚMEROS
+========================================================= */
+
+.grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fill,minmax(55px,1fr));
+
+    gap:8px;
+
+}
+
+
+.cell{
+
+    aspect-ratio:1;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:10px;
+
+    font-weight:700;
+
+    transition:.2s;
+
+}
+
+
+.cell.available{
+
+    background:var(--available);
+
+    color:var(--available-text);
+
+}
+
+
+.cell.blocked{
+
+    background:var(--blocked);
+
+    color:var(--blocked-text);
+
+    position:relative;
+
+}
+
+
+.cell.blocked::after{
+
+    content:"✓";
+
+    font-size:.65rem;
+
+    margin-left:3px;
+
+}
+
+
+.cell:hover{
+
+    transform:translateY(-3px);
+
+}
+
+
+/* =========================================================
+   ADMINISTRAÇÃO
+========================================================= */
+
+.admin-card{
+
+    background:white;
+
+    border-radius:24px;
+
+    padding:28px;
+
+    margin-top:28px;
+
+    box-shadow:0 10px 35px rgba(16,42,67,.08);
+
+}
+
+
+.admin-card h2{
+
+    color:var(--blue-950);
+
+}
+
+
+.admin-card p{
+
+    color:var(--muted);
+
+}
+
+
+.admin-toolbar{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:10px;
+
+    align-items:center;
+
+    margin:30px 0 18px;
+
+}
+
+
+.admin-toolbar .spacer{
+
+    flex:1;
+
+}
+
+
+table.crud{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    background:white;
+
+    border-radius:16px;
+
+    overflow:hidden;
+
+    box-shadow:0 8px 30px rgba(16,42,67,.08);
+
+}
+
+
+table.crud th{
+
+    background:var(--blue-950);
+
+    color:white;
+
+    text-align:left;
+
+    padding:14px;
+
+}
+
+
+table.crud td{
+
+    padding:13px 14px;
+
+    border-bottom:1px solid #edf0f2;
+
+}
+
+
+.status-available{
+
+    color:var(--available-text);
+
+    font-weight:700;
+
+}
+
+
+.status-blocked{
+
+    color:var(--blocked-text);
+
+    font-weight:700;
+
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(16,42,67,.65);
+
+    display:none;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:20px;
+
+    z-index:100;
+
+}
+
+
+.overlay.active{
+
+    display:flex;
+
+}
+
+
+.modal{
+
+    width:100%;
+
+    max-width:420px;
+
+    background:white;
+
+    border-radius:20px;
+
+    padding:30px;
+
+    box-shadow:0 25px 60px rgba(0,0,0,.25);
+
+}
+
+
+.modal h2{
+
+    color:var(--blue-950);
+
+}
+
+
+.modal p{
+
+    color:var(--muted);
+
+}
+
+
+.field{
+
+    margin-top:20px;
+
+}
+
+
+.field label{
+
+    display:block;
+
+    font-size:.85rem;
+
+    font-weight:700;
+
+    margin-bottom:7px;
+
+}
+
+
+.field input{
+
+    width:100%;
+
+    padding:12px;
+
+    border:1px solid #ccd5dd;
+
+    border-radius:8px;
+
+    font-size:1rem;
+
+}
+
+
+.modal-actions{
+
+    display:flex;
+
+    gap:10px;
+
+    margin-top:24px;
+
+}
+
+
+.msg{
+
+    margin-top:15px;
+
+    padding:10px;
+
+    border-radius:8px;
+
+    font-size:.9rem;
+
+}
+
+
+.msg.error{
+
+    background:#f9e0df;
+
+    color:#8d302d;
+
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+footer{
+
+    text-align:center;
+
+    padding:30px;
+
+    color:#87919a;
+
+    font-size:.85rem;
+
+}
+
+
+/* =========================================================
+   RESPONSIVIDADE
+========================================================= */
+
+@media(max-width:640px){
+
+    .hero-inner{
+
+        align-items:flex-start;
+
+    }
+
+
+    .stat-row{
+
+        width:100%;
+
+    }
+
+
+    .stat{
+
+        flex:1;
+
+        min-width:0;
+
+        padding:14px 10px;
+
+        text-align:center;
+
+    }
+
+
+    .grid{
+
+        grid-template-columns:
+        repeat(auto-fill,minmax(45px,1fr));
+
+    }
+
+
+    .bingo-section{
+
+        padding:35px 15px;
+
+    }
+
+
+    .bingo-machine{
+
+        width:230px;
+
+        height:230px;
+
+    }
+
+
+    .bingo-ball{
+
+        width:170px;
+
+        height:170px;
+
+        font-size:4rem;
+
+    }
+
+
+    table.crud{
+
+        font-size:.85rem;
+
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
+
+<header class="hero">
+
+<div class="hero-inner">
+
+<div class="hero-text">
+
+<div class="eyebrow">
+
+Campanha de Doação
+
+</div>
+
+<h1>
+
+Cada número conta.
+
+</h1>
+
+<p>
+
+Acompanhe a campanha em tempo real.
+Cada seleção utiliza um número único e, depois de escolhido,
+ele não poderá participar novamente.
+
+</p>
+
+</div>
+
+<div class="stat-row">
+
+<div class="stat">
+
+<div class="num" id="statTotal">
+
+500
+
+</div>
+
+<div class="lbl">
+
+números
+
+</div>
+
+</div>
+
+<div class="stat">
+
+<div class="num" id="statAvailable">
+
+500
+
+</div>
+
+<div class="lbl">
+
+disponíveis
+
+</div>
+
+</div>
+
+<div class="stat">
+
+<div class="num" id="statBlocked">
+
+0
+
+</div>
+
+<div class="lbl">
+
+utilizados
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</header>
+
+<!-- =====================================================
+     NAVEGAÇÃO
+===================================================== -->
+
+<nav class="tabs">
+
+<button class="tab-btn active" data-tab="public">
+
+Campanha
+
+</button>
+
+<button class="tab-btn" data-tab="admin">
+
+Administração
+
+</button>
+
+</nav>
+
+<div class="container">
+
+<!-- =====================================================
+     PÁGINA PRINCIPAL
+===================================================== -->
+
+<section class="panel active" id="panel-public">
+
+<div class="info-card">
+
+<h2>
+
+Um número por vez
+
+</h2>
+
+<p>
+
+A campanha possui 500 números.
+Quando um número é selecionado, ele é automaticamente bloqueado
+e não poderá ser escolhido novamente.
+
+</p>
+
+</div>
+
+<!-- ROLETA -->
+
+<div class="bingo-section">
+
+<div class="bingo-header">
+
+<div class="bingo-tag">
+
+SELEÇÃO EM ANDAMENTO
+
+</div>
+
+<h2>
+
+Qual será o próximo número?
+
+</h2>
+
+<p>
+
+A seleção acontece exclusivamente entre os números
+que ainda estão disponíveis.
+
+</p>
+
+</div>
+
+<div class="bingo-machine">
+
+<div class="bingo-ring"></div>
+
+<div class="bingo-glow"></div>
+
+<div class="bingo-ball" id="drawNumber">
+
+?
+
+</div>
+
+</div>
+
+<button class="btn btn-coral" id="drawBtn">
+
+🎱 Realizar seleção
+
+</button>
+
+</div>
+
+<!-- LEGENDA -->
+
+<div class="legend">
+
+<div class="item">
+
+<span class="swatch available"></span>
+
+Disponível
+
+</div>
+
+<div class="item">
+
+<span class="swatch blocked"></span>
+
+Utilizado
+
+</div>
+
+</div>
+
+<!-- GRADE -->
+
+<div class="grid" id="numberGrid">
+
+</div>
+
+</section>
+
+<!-- =====================================================
+     ADMINISTRAÇÃO
+===================================================== -->
+
+<section class="panel" id="panel-admin">
+
+<div class="admin-card">
+
+<h2>
+
+Gerenciar números
+
+</h2>
+
+<p>
+
+Você pode bloquear ou liberar manualmente qualquer número.
+Todas as alterações exigem confirmação por senha.
+
+</p>
+
+</div>
+
+<div class="admin-toolbar">
+
+<button class="btn btn-ghost" id="refreshTableBtn">
+
+↻ Atualizar tabela
+
+</button>
+
+<div class="spacer"></div>
+
+</div>
+
+<table class="crud">
+
+<thead>
+
+<tr>
+
+<th>Número</th>
+
+<th>Status</th>
+
+<th>Ação</th>
+
+</tr>
+
+</thead>
+
+<tbody id="crudBody">
+
+</tbody>
+
+</table>
+
+</section>
+
+</div>
+
+<!-- =====================================================
+     MODAL DE SENHA
+===================================================== -->
+
+<div class="overlay" id="passwordOverlay">
+
+<div class="modal">
+
+<h2>
+
+Confirmação necessária
+
+</h2>
+
+<p id="passwordDescription">
+
+Para alterar o estado deste número,
+informe a senha administrativa.
+
+</p>
+
+<div class="field">
+
+<label>
+
+Senha de confirmação
+
+</label>
+
+<input
+type="password"
+id="adminPassword"
+placeholder="Digite a senha"
+autocomplete="off"
+
+>
+
+</div>
+
+<div
+class="msg error"
+id="passwordMsg"
+style="display:none;"
+>
+
+</div>
+
+<div class="modal-actions">
+
+<button
+class="btn btn-ghost"
+id="passwordCancelBtn"
+
+>
+
+Cancelar
+
+</button>
+
+<button
+class="btn btn-primary"
+id="passwordConfirmBtn"
+
+>
+
+Confirmar alteração
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<footer>
+
+Cada Número Conta · Campanha de Doação
+
+</footer>
+
+<script>
+
+(function(){
+
+
+/* =========================================================
+   CONFIGURAÇÕES
+========================================================= */
+
+const TOTAL = 500;
+
+
+/* =========================================================
+   FIREBASE CONFIG
+
+   COLE A CONFIGURAÇÃO DO SEU PROJETO AQUI
+========================================================= */
+
+const firebaseConfig = {
+
+    /*
+    
+    apiKey: "SUA_CHAVE",
+    authDomain: "SEU_PROJETO.firebaseapp.com",
+    projectId: "SEU_PROJETO",
+    storageBucket: "SEU_PROJETO.appspot.com",
+    messagingSenderId: "SEU_ID",
+    appId: "SEU_APP_ID"
+    
+    */
+
+  
+  apiKey: "AIzaSyA5-pWwzPZlzOoTF1sLDm9mt_jAVWTs0LE",
+  authDomain: "sorteio-ffbc0.firebaseapp.com",
+  projectId: "sorteio-ffbc0",
+  storageBucket: "sorteio-ffbc0.firebasestorage.app",
+  messagingSenderId: "579779784050",
+  appId: "1:579779784050:web:5528ffda1b7a88bcd741eb",
+  measurementId: "G-H4BYED1T7K"
+  
+
+};
+
+
+/* =========================================================
+   SENHA ADMINISTRATIVA
+
+   ALTERE PARA A SENHA DESEJADA
+
+   OBSERVAÇÃO:
+   Como este projeto é apenas HTML/JS, essa senha fica
+   visível para quem inspecionar o código.
+========================================================= */
+
+const ADMIN_PASSWORD = "123456";
+
+
+/* =========================================================
+   INICIALIZAÇÃO FIREBASE
+========================================================= */
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.firestore();
+
+
+/* =========================================================
+   VARIÁVEIS
+========================================================= */
+
+let statusMap = {};
+
+let pendingAction = null;
+
+let pendingNumber = null;
+
+let isDrawing = false;
+
+
+const $ = id => document.getElementById(id);
+
+
+/* =========================================================
+   ESTATÍSTICAS
+========================================================= */
+
+function renderStats(){
+
+    const blocked = Object.keys(statusMap).length;
+
+    const available = TOTAL - blocked;
+
+
+    $("statTotal").textContent = TOTAL;
+
+    $("statAvailable").textContent = available;
+
+    $("statBlocked").textContent = blocked;
+
+}
+
+
+/* =========================================================
+   GRADE
+========================================================= */
+
+function renderGrid(){
+
+    const grid = $("numberGrid");
+
+    let html = "";
+
+
+    for(let i = 1; i <= TOTAL; i++){
+
+        const blocked = statusMap[i];
+
+
+        html += `
+
+        <div class="cell ${blocked ? "blocked" : "available"}">
+
+            ${i}
+
+        </div>
+
+        `;
+
+    }
+
+
+    grid.innerHTML = html;
+
+}
+
+
+/* =========================================================
+   TABELA ADMINISTRATIVA
+========================================================= */
+
+function renderCrud(){
+
+    const body = $("crudBody");
+
+    let html = "";
+
+
+    for(let i = 1; i <= TOTAL; i++){
+
+        const blocked = statusMap[i];
+
+
+        html += `
+
+        <tr>
+
+            <td>
+
+                ${i}
+
+            </td>
+
+
+            <td>
+
+                <span class="${
+                    blocked
+                    ? "status-blocked"
+                    : "status-available"
+                }">
+
+                    ${
+                        blocked
+                        ? "Utilizado"
+                        : "Disponível"
+                    }
+
+                </span>
+
+            </td>
+
+
+            <td>
+
+                <button
+                class="btn ${
+                    blocked
+                    ? "btn-primary"
+                    : "btn-danger"
+                }"
+                onclick="requestChange(${i}, ${blocked})"
+                >
+
+                    ${
+                        blocked
+                        ? "Liberar"
+                        : "Bloquear"
+                    }
+
+                </button>
+
+            </td>
+
+        </tr>
+
+        `;
+
+    }
+
+
+    body.innerHTML = html;
+
+}
+
+
+/* =========================================================
+   RENDERIZAÇÃO
+========================================================= */
+
+function renderAll(){
+
+    renderStats();
+
+    renderGrid();
+
+    renderCrud();
+
+}
+
+
+/* =========================================================
+   LISTENER DO FIREBASE
+
+   Atualiza automaticamente quando um número
+   é bloqueado ou liberado.
+========================================================= */
+
+db.collection("public_status")
+
+.onSnapshot(snapshot => {
+
+
+    statusMap = {};
+
+
+    snapshot.forEach(doc => {
+
+        statusMap[doc.id] = true;
+
+    });
+
+
+    renderAll();
+
+
+}, error => {
+
+
+    console.error(
+
+        "Erro ao carregar dados:",
+
+        error
+
+    );
+
+
+});
+
+
+/* =========================================================
+   FUNÇÃO PARA PEGAR NÚMEROS DISPONÍVEIS
+========================================================= */
+
+function getAvailableNumbers(){
+
+    const availableNumbers = [];
+
+
+    for(let i = 1; i <= TOTAL; i++){
+
+        if(!statusMap[i]){
+
+            availableNumbers.push(i);
+
+        }
+
+    }
+
+
+    return availableNumbers;
+
+}
+
+
+/* =========================================================
+   SORTEIO COM ROLETA
+========================================================= */
+
+$("drawBtn")
+
+.addEventListener("click", async () => {
+
+
+    if(isDrawing){
+
+        return;
+
+    }
+
+
+    const availableNumbers =
+
+    getAvailableNumbers();
+
+
+    if(availableNumbers.length === 0){
+
+        alert(
+
+            "Todos os 500 números já foram utilizados."
+
+        );
+
+        return;
+
+    }
+
+
+    isDrawing = true;
+
+
+    const button = $("drawBtn");
+
+    const ball = $("drawNumber");
+
+
+    button.disabled = true;
+
+    button.textContent = "Selecionando...";
+
+
+    /* -----------------------------------------------------
+       ESCOLHE O NÚMERO PRIMEIRO
+
+       Isso garante que a animação sempre termine
+       em um número válido.
+    ----------------------------------------------------- */
+
+    const randomIndex = Math.floor(
+
+        Math.random()
+
+        *
+
+        availableNumbers.length
+
+    );
+
+
+    const selectedNumber =
+
+    availableNumbers[randomIndex];
+
+
+    try{
+
+
+        /* -------------------------------------------------
+           TENTA BLOQUEAR O NÚMERO NO FIREBASE
+
+           A transação impede que o mesmo número seja
+           selecionado duas vezes simultaneamente.
+        ------------------------------------------------- */
+
+        await db.runTransaction(
+
+        async transaction => {
+
+
+            const ref = db
+
+            .collection("public_status")
+
+            .doc(String(selectedNumber));
+
+
+            const doc =
+
+            await transaction.get(ref);
+
+
+            if(doc.exists){
+
+                throw new Error(
+
+                    "Número utilizado simultaneamente."
+
+                );
+
+            }
+
+
+            transaction.set(ref, {
+
+                blocked:true,
+
+                selectedAt:new Date().toISOString()
+
+            });
+
+
+        });
+
+
+        /* -------------------------------------------------
+           INICIA A ROLETA
+        ------------------------------------------------- */
+
+        ball.classList.remove("final");
+
+        ball.classList.add("rolling");
+
+
+        const animationDuration = 3500;
+
+        const startTime = Date.now();
+
+
+        const animation = setInterval(() => {
+
+
+            const elapsed =
+
+            Date.now()
+
+            -
+
+            startTime;
+
+
+            /* ------------------------------------------------
+               Enquanto gira, mostra números aleatórios
+            ------------------------------------------------ */
+
+            const randomNumber =
+
+            availableNumbers[
+
+                Math.floor(
+
+                    Math.random()
+
+                    *
+
+                    availableNumbers.length
+
+                )
+
+            ];
+
+
+            ball.textContent = randomNumber;
+
+
+            if(elapsed >= animationDuration){
+
+
+                clearInterval(animation);
+
+
+                /* --------------------------------------------
+                   RESULTADO FINAL
+                -------------------------------------------- */
+
+                ball.textContent = selectedNumber;
+
+
+                ball.classList.remove("rolling");
+
+                ball.classList.add("final");
+
+
+                button.disabled = false;
+
+                button.textContent = "🎱 Realizar seleção";
+
+
+                isDrawing = false;
+
+
+            }
+
+
+        }, 80);
+
+
+    }catch(error){
+
+
+        console.error(error);
+
+
+        alert(
+
+            "Ocorreu um conflito durante a seleção. "
+
+            +
+
+            "Tente novamente."
+
+        );
+
+
+        ball.classList.remove("rolling");
+
+        ball.textContent = "?";
+
+
+        button.disabled = false;
+
+        button.textContent = "🎱 Realizar seleção";
+
+
+        isDrawing = false;
+
+
+    }
+
+
+});
+
+
+/* =========================================================
+   SOLICITA ALTERAÇÃO ADMINISTRATIVA
+========================================================= */
+
+window.requestChange = function(
+
+    number,
+
+    isBlocked
+
+){
+
+
+    pendingNumber = number;
+
+
+    pendingAction =
+
+    isBlocked
+
+    ? "release"
+
+    : "block";
+
+
+    $("adminPassword").value = "";
+
+
+    $("passwordMsg").style.display = "none";
+
+
+    $("passwordDescription").textContent =
+
+    isBlocked
+
+    ?
+
+    `Você está prestes a liberar o número ${number}.`
+
+    :
+
+    `Você está prestes a bloquear o número ${number}.`;
+
+
+    $("passwordOverlay")
+
+    .classList.add("active");
+
+
+    $("adminPassword").focus();
+
+
+};
+
+
+/* =========================================================
+   CANCELAR ALTERAÇÃO
+========================================================= */
+
+$("passwordCancelBtn")
+
+.addEventListener("click", () => {
+
+
+    $("passwordOverlay")
+
+    .classList.remove("active");
+
+
+    pendingNumber = null;
+
+    pendingAction = null;
+
+
+});
+
+
+/* =========================================================
+   CONFIRMAR SENHA
+========================================================= */
+
+$("passwordConfirmBtn")
+
+.addEventListener("click", async () => {
+
+
+    const password =
+
+    $("adminPassword").value;
+
+
+    const msg =
+
+    $("passwordMsg");
+
+
+    msg.style.display = "none";
+
+
+    if(password !== ADMIN_PASSWORD){
+
+
+        msg.textContent =
+
+        "Senha incorreta.";
+
+
+        msg.style.display = "block";
+
+
+        return;
+
+    }
+
+
+    try{
+
+
+        const ref = db
+
+        .collection("public_status")
+
+        .doc(String(pendingNumber));
+
+
+        /* -----------------------------------------------
+           BLOQUEAR
+        ----------------------------------------------- */
+
+        if(pendingAction === "block"){
+
+
+            await ref.set({
+
+                blocked:true,
+
+                selectedAt:
+
+                new Date().toISOString(),
+
+                manual:true
+
+            });
+
+
+        }
+
+
+        /* -----------------------------------------------
+           LIBERAR
+        ----------------------------------------------- */
+
+        else if(pendingAction === "release"){
+
+
+            await ref.delete();
+
+
+        }
+
+
+        $("passwordOverlay")
+
+        .classList.remove("active");
+
+
+        pendingNumber = null;
+
+        pendingAction = null;
+
+
+    }catch(error){
+
+
+        console.error(error);
+
+
+        alert(
+
+            "Erro ao alterar o número: "
+
+            +
+
+            error.message
+
+        );
+
+
+    }
+
+
+});
+
+
+/* =========================================================
+   ENTER PARA CONFIRMAR SENHA
+========================================================= */
+
+$("adminPassword")
+
+.addEventListener("keydown", event => {
+
+
+    if(event.key === "Enter"){
+
+
+        $("passwordConfirmBtn").click();
+
+
+    }
+
+
+});
+
+
+/* =========================================================
+   TABS
+========================================================= */
+
+document
+
+.querySelectorAll(".tab-btn")
+
+.forEach(button => {
+
+
+    button.addEventListener("click", () => {
+
+
+        document
+
+        .querySelectorAll(".tab-btn")
+
+        .forEach(btn => {
+
+            btn.classList.remove("active");
+
+        });
+
+
+        button.classList.add("active");
+
+
+        document
+
+        .querySelectorAll(".panel")
+
+        .forEach(panel => {
+
+            panel.classList.remove("active");
+
+        });
+
+
+        $(
+
+            "panel-"
+
+            +
+
+            button.dataset.tab
+
+        )
+
+        .classList.add("active");
+
+
+    });
+
+
+});
+
+
+/* =========================================================
+   ATUALIZAR TABELA
+========================================================= */
+
+$("refreshTableBtn")
+
+.addEventListener("click", () => {
+
+
+    renderCrud();
+
+
+});
+
+
+/* =========================================================
+   RENDERIZAÇÃO INICIAL
+========================================================= */
+
+renderAll();
+
+
+})();
+
+</script>
+
+</body>
+</html>

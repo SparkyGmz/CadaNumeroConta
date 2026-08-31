@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------------------------------------------------------
+    // public_status: só guarda "esse número está ocupado", sem nome.
+    // Qualquer visitante pode ler (para colorir a grade) e pode criar
+    // um registro (reservar um número), mas nunca sobrescrever um que
+    // já existe, nem editar/apagar — isso é só para administradores.
+    // ---------------------------------------------------------------
+    match /public_status/{number} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['taken'])
+                    && request.resource.data.taken == true
+                    && !exists(/databases/$(database)/documents/public_status/$(number));
+      allow update, delete: if request.auth != null;
+    }
+
+    // ---------------------------------------------------------------
+    // registrations: guarda nome e telefone. Só o administrador
+    // logado pode LER a lista (por isso os nomes nunca ficam públicos).
+    // Qualquer visitante pode CRIAR um cadastro (reservar um número),
+    // mas nunca sobrescrever um que já existe.
+    // ---------------------------------------------------------------
+    match /registrations/{number} {
+      allow read: if request.auth != null;
+      allow create: if request.resource.data.keys().hasAll(['name','phone','registeredAt'])
+                    && !exists(/databases/$(database)/documents/registrations/$(number));
+      allow update, delete: if request.auth != null;
+    }
+
+    // ---------------------------------------------------------------
+    // meta/winner: todo mundo pode ler o nome do vencedor (é o único
+    // nome que deve ficar público). Só o administrador pode sortear
+    // ou limpar o vencedor.
+    // ---------------------------------------------------------------
+    match /meta/winner {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}
